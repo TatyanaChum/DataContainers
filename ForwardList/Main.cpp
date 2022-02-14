@@ -39,34 +39,40 @@ class Iterator
 {
 	Element* Temp;
 public:
-	Iterator(Element* Temp = nullptr) : Temp(Temp)
+	Iterator(Element* Temp = nullptr) :Temp(Temp)
 	{
-		cout << "ItConstructor: \t" << this << endl;
+		cout << "ItConstructor:\t" << this << endl;
 	}
 	~Iterator()
 	{
-		cout << "ItDestructor: \t" << this << endl;
+		cout << "ItDestructor:\t" << this << endl;
 	}
-	Iterator& operator++() //Prefix increment
+
+	Iterator& operator++()	//Prefix increment
 	{
 		Temp = Temp->pNext;
 		return *this;
 	}
 	Iterator operator++(int)//Postfix increment
 	{
-		Iterator old = *this;//сохраняем старое значение Итератора
-		Temp = Temp->pNext;//изменяем старое значение
-		return old;//возвращаем старое значение
+		Iterator old = *this;	//Сохраняем старое значение итератора
+		Temp = Temp->pNext;		//Изменяем итератор
+		return old;	//Возвращаем старое значение
 	}
-	bool operator ==(const Iterator& other)const
+
+	bool operator==(const Iterator& other)const
 	{
 		return this->Temp == other.Temp;
 	}
-	bool operator !=(const Iterator& other)const
+	bool operator!=(const Iterator& other)const
 	{
 		return this->Temp != other.Temp;
 	}
 
+	const int& operator*()const
+	{
+		return Temp->Data;
+	}
 	int& operator*()
 	{
 		return Temp->Data;
@@ -78,13 +84,21 @@ class ForwardList//Односвязный (однонаправленный) список
 	Element* Head;	//Голова списка - указывает на начальный элемент списка.
 	unsigned int size;//Размер списка
 public:
-	Element* getHead() const
+	Element* getHead()const
 	{
 		return Head;
 	}
 	unsigned int get_size()const
 	{
 		return this->size;
+	}
+	Iterator begin()
+	{
+		return Head;
+	}
+	Iterator end()
+	{
+		return nullptr;
 	}
 	ForwardList()
 	{
@@ -154,27 +168,29 @@ public:
 		//0) Проверяем, является ли список пустым:
 		if (Head == nullptr)return push_front(Data);
 		//1) Создаем новый элемент:
-		Element* New = new Element(Data);
+		//Element* New = new Element(Data);
 		//2) Доходим до конца списка:
 		Element* Temp = Head;
 		while (Temp->pNext)//Пока, pNext текущего элемента НЕ ноль
 			Temp = Temp->pNext;//переходим на следующий элемент
 		//Теперь мы находимся в последнем элементе, т.е. Temp->pNext == nullptr
 		//3) Присоединяем новый элемент к последнему:
-		Temp->pNext = New;
+		//Temp->pNext = New;
+		Temp->pNext = new Element(Data);
 		size++;
 	}
 	void insert(int index, int Data)
 	{
 		if (index == 0 || Head == nullptr)return push_front(Data);
 		if (index > size)return;
-		Element* New = new Element(Data);
+		//Element* New = new Element(Data);
 		//1) Доходим до нужного элемента:
 		Element* Temp = Head;
 		for (int i = 0; i < index - 1; i++)Temp = Temp->pNext;
 		//3) Включаем новый элемент в список:
-		New->pNext = Temp->pNext;
-		Temp->pNext = New;
+		//New->pNext = Temp->pNext;
+		//Temp->pNext = New;
+		Temp->pNext = new Element(Data, Temp->pNext);
 		size++;
 	}
 
@@ -223,34 +239,30 @@ public:
 	}
 
 	//					Methods:
-//#define OLD_PRINT
 	void print()const
 	{
 #ifdef OLD_PRINT
 		int a = 2;
 		int* pa = &a;
-
 		Element* Temp = Head;	//Temp - это итератор.
-//Итератор - это указатель, при помощи которого можно получить доступ 
-//к элементам структуры данных.
+		//Итератор - это указатель, при помощи которого можно получить доступ 
+		//к элементам структуры данных.
 		while (Temp)//Пока Итератор содержит ненулевой адрес.
 		{
 			cout << Temp << tab << Temp->Data << tab << Temp->pNext << endl;
 			Temp = Temp->pNext;	//переход на следующий элемент
 		}
 #endif // OLD_PRINT
+
+		//		for(Start;		   Stop;	Step)
 		for (Element* Temp = Head; Temp; Temp = Temp->pNext)
-			//for (Element* Temp = Head; Temp;Temp++)
+			//for (Element* Temp = Head; Temp; Temp++)
 			cout << Temp << tab << Temp->Data << tab << Temp->pNext << endl;
 		cout << "Количество элементов списка: " << size << endl;
 		cout << "Общее количество элементов : " << Head->count << endl;
 	}
 };
 
-//#define BASE_CHECK
-//#define DESTRUCTOR_CHECK
-//#define HOME_WORK_1
-//#define HOME_WORK_2
 
 void print_list(const ForwardList& list)
 {
@@ -260,6 +272,13 @@ void print_list(const ForwardList& list)
 	}
 	cout << endl;
 }
+
+//#define BASE_CHECK
+//#define DESTRUCTOR_CHECK
+//#define HOME_WORK_1
+//#define HOME_WORK_2
+//#define RANGE_BASE_FOR_ARRAY
+#define RANGE_BASE_FOR_LIST
 
 void main()
 {
@@ -300,7 +319,6 @@ void main()
 	list1.push_back(13);
 	list1.push_back(21);
 	list1.print();
-
 	ForwardList list2;
 	list2.push_back(34);
 	list2.push_back(55);
@@ -339,29 +357,57 @@ void main()
 	ForwardList list = { 3,5,8,13,21 };
 	//(ForwardList)  = (initializer_list)
 	//list.print();
-	/*for (Iterator it = list.getHead(); it != nullptr; it++)
+	for (Iterator it = list.getHead(); it != nullptr; ++it)
 	{
 		cout << *it << tab;
 	}
-	cout << endl;*/
-	Iterator it = list.getHead();
+	cout << endl;
+	/*Iterator it = list.getHead();
 	Iterator it2 = it++;
 	cout << it << endl;
-	cout << it2 << endl;
+	cout << it2 << endl;*/
 #endif // HOME_WORK_2
 
+#ifdef RANGE_BASE_FOR_ARRAY
 	int arr[] = { 3,5,8,13,21 };
-	/*for (size_t i = 0; i < sizeof(arr)/sizeof(int); i++)
+	/*for (int i = 0; i < sizeof(arr) / sizeof(int); i++)
 	{
 		cout << arr[i] << tab;
 	}
 	cout << endl;*/
-	for (int i : arr)//range-based for(for для диапозона)
+
+	//range-based for (for для диапазона.)
+	for (int i : arr)
 	{
 		cout << i << tab;
 	}
-
 	cout << endl;
-	//Под диапозоном понимается контейнер (массив, список, и тд)
-	//В других языках програмирования это называют foreach
+	//Под диапазоном понимается контейнер (массив, список и т.д.)
+	//В других языках программирования это называют foreach  
+#endif // RANGE_BASE_FOR_ARRAY
+
+#ifdef RANGE_BASE_FOR_LIST
+	ForwardList list = { 3,5,8,13,21 };
+	for (Iterator it = list.begin(); it != list.end(); it++)
+	{
+		cout << *it << tab;
+	}
+	cout << endl;
+	for (int i : list)
+	{
+		cout << i << tab;
+	}
+	cout << endl;
+	//Range-based for
+	/*
+	------------------------------------------------------
+	for(value:container)
+	{
+		cout << value;
+	}
+	------------------------------------------------------
+	*/
+#endif // RANGE_BASE_FOR_LIST
+
 }
+
