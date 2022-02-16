@@ -31,12 +31,151 @@ class List
 	Element* Tail;
 	unsigned int size;*/
 public:
+	class Iterator
+	{
+		Element* Temp;
+	public:
+		Iterator(Element* Temp = nullptr) :Temp(Temp)
+		{
+			cout << "ItConstructor:\t" << this << endl;
+		}
+		~Iterator()
+		{
+			cout << "ItDestructor: \t" << this << endl;
+		}
+		Iterator& operator++()
+		{
+			Temp = Temp->pNext;
+			return *this;
+		}
+		Iterator operator ++(int)
+		{
+			Iterator old = *this;
+			Temp = Temp->pNext;
+			return old;
+		}
+		Iterator operator --()
+		{
+			Temp = Temp->pPrev;
+			return *this;
+		}
+
+		Iterator operator --(int)
+		{
+			Iterator old = *this;
+			Temp = Temp->pPrev;
+			return old;
+		}
+
+		bool operator ==(const Iterator& other) const
+		{
+			return this->Temp == other.Temp;
+		}
+		bool operator !=(const Iterator& other) const
+		{
+			return this->Temp != other.Temp;
+		}
+		const int& operator*()const
+		{
+			return Temp->Data;
+		}
+		int& operator* ()
+		{
+			return Temp->Data;
+		}
+	};
+
+	class ReverseIterator
+	{
+		Element* Temp;
+	public:
+		ReverseIterator(Element* Temp = nullptr) :Temp(Temp)
+		{
+			cout << "RItConstructor: \t" << this << endl;
+		}
+		~ReverseIterator()
+		{
+			cout << "RItDestructor: \t" << this << endl;
+		}
+		ReverseIterator& operator ++()
+		{
+			Temp = Temp->pPrev;
+			return *this;
+		}
+		ReverseIterator operator ++(int)
+		{
+			ReverseIterator old = *this;
+			Temp = Temp->pPrev;
+			return old;
+		}
+		ReverseIterator operator --()
+		{
+			Temp = Temp->pNext;
+			return *this;
+		}
+		ReverseIterator operator --(int)
+		{
+			ReverseIterator old = *this;
+			Temp = Temp->pNext;
+			return old;
+		}
+		bool operator ==(const ReverseIterator& other) const
+		{
+			return this->Temp == other.Temp;
+		}
+		bool operator !=(const ReverseIterator& other) const
+		{
+			return this->Temp != other.Temp;
+		}
+		const int& operator*() const
+		{
+			return Temp->Data;
+		}
+		int& operator*() 
+		{
+			return Temp->Data;
+		}
+		operator bool() const
+		{
+			return Temp;
+		}
+	};
+
+	Iterator begin()
+	{
+		return Head;
+	}
+	Iterator end()
+	{
+		return nullptr;
+	}
+	ReverseIterator rbegin()
+	{
+		return Tail;
+	}
+	ReverseIterator rend()
+	{
+		return nullptr;
+	}
+
 	List()
 	{
 		Head = Tail = nullptr;
 		size = 0;
 		cout << "LConstructor:\t" << this << endl;
 	}
+	List(const initializer_list<int>& il) :List()
+	{
+		cout << typeid(il.begin()).name() << endl;
+		//const int* p; //константный указатель
+		//int const* p; // указатель на константу
+		//const int const* p; //константный указатель на константу.
+		for (int const* it = il.begin(); it != il.end(); ++it)
+		{
+			push_back(*it);
+		}
+	}
+
 	~List()
 	{
 		//while(Head)pop_front();
@@ -69,9 +208,9 @@ public:
 			return;
 		}
 		Element* New = new Element(Data);
-		New->pNext = Head;
-		Head->pPrev = New;
-		Head = New;
+		New->pPrev = Tail;
+		Tail->pNext = New;
+		Tail = New;
 		//Head = Head->pPrev = new Element(Data,Head);
 		size++;
 	}
@@ -142,10 +281,14 @@ public:
 		cout << " оличество элементов списка: " << size << endl;
 	}
 };
-#define BASE_CHECK
+//#define BASE_CHECK
+//#define RANGE_BASED_FOR_ARRAY
+
+
 void main()
 {
 	setlocale(LC_ALL, "");
+#ifdef BASE_CHECK
 
 	int n;
 	cout << "¬ведите размер списка: "; cin >> n;
@@ -169,4 +312,34 @@ void main()
 	list.insert(index, value);
 	list.print();
 	list.reverse_print();
+#endif // BASE_CHECK
+#ifdef RANGE_BASED_FOR_ARRAY
+	int arr[] = { 3,5,8,13,21 };
+	sizeof(arr);
+	cout << typeid(arr).name() << endl;
+	for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
+	{
+		cout << arr[i] << tab;
+	}
+	//print(arr);
+	cout << endl;
+
+	for (int i : arr)
+	{
+		cout << i << tab;
+	}
+	cout << endl;
+#endif // RANGE_BASED_FOR_ARRAY
+	List list = { 3,5,8,13,21 };
+	list.print();
+	for (int i:list)
+	{
+		cout << i << tab;
+	}
+	cout << endl;
+	for (List::ReverseIterator it = list.rbegin(); it /*!= list.rend()*/; ++it)
+	{
+		cout << *it << tab;
+	}
+	cout << endl;
 }
